@@ -1,26 +1,44 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from 'react';
+import { TAppState } from './helpers/types/TAppState';
+import { getSpecies } from './services/getSpecies';
+import { ISpecies } from './helpers/interfaces/ISpecies';
+import { Route, Routes } from 'react-router-dom';
+import Home from './pages/Home';
+import _404 from './components/Errors/404';
+import People from './pages/People';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+export default class App extends Component<{}, TAppState> {
+    state = {
+        isLoaded: false,
+        species: [
+            {
+                name: '',
+                classification: '',
+                designation: '',
+                language: '',
+                people: [],
+            },
+        ],
+    };
+
+    componentDidMount(): void {
+        const speciesPromise: Promise<any> = getSpecies('Human', 'Droid', 'Wokkie');
+
+        speciesPromise.then((species: Array<ISpecies>) => {
+            const isLoaded = true;
+            this.setState({ isLoaded, species });
+        });
+    }
+
+    render(): JSX.Element {
+        const { isLoaded, species } = this.state;
+
+        return (
+            <Routes>
+                <Route path="/" element={<Home isLoaded={isLoaded} species={species} />} />
+                <Route path="/species/:specieId" element={<People species={species} />} />
+                <Route path="*" element={<_404 />} />
+            </Routes>
+        );
+    }
 }
-
-export default App;
